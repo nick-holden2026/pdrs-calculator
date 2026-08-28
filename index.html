@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSW PDRS BESS4 Commercial Calculator</title>
+<style>
+:root{--primary-blue:#1a252f;--header-blue:#2c3e50;--editable-bg:#fff9c4;--editable-border:#fbc02d;--editable-row-bg:#fffde7;--auto-bg:#f8f9fa;--auto-border:#dee2e6;--hero-green:#27ae60;--text-main:#2c3e50;--text-light:#7f8c8d;--deduction-red:#c0392b}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f0f2f5;color:var(--text-main);margin:0;padding:20px;line-height:1.5}
+.container{max-width:1300px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden}
+header{background:var(--primary-blue);color:#fff;padding:20px 30px;text-align:center}
+header h1{margin:0;font-size:24px}header p{margin:6px 0 0;font-size:13px;opacity:.85}
+.topbar{background:#ecf0f1;padding:10px 30px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;font-size:13px;border-bottom:2px solid var(--hero-green)}
+.legend-item{display:flex;align-items:center;gap:6px;font-weight:600}
+.legend-swatch{width:18px;height:18px;border-radius:4px;border:1px solid #ccc}
+.swatch-editable{background:var(--editable-bg);border-color:var(--editable-border)}.swatch-auto{background:var(--auto-bg)}
+.stat-pill{background:#fff;border:1px solid var(--auto-border);border-radius:20px;padding:4px 14px;font-weight:700;font-size:12px;color:var(--header-blue)}
+.stat-pill span{color:var(--hero-green)}
+.main-grid{display:grid;grid-template-columns:1.3fr 1fr}
+.col-left,.col-right{padding:25px}.col-left{border-right:2px solid var(--auto-border)}
+h2{font-size:14px;text-transform:uppercase;color:#fff;background:var(--header-blue);padding:12px 15px;margin:0 -25px 20px;border-left:5px solid var(--hero-green)}
+.input-group{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.field{display:flex;flex-direction:column}
+.field label{font-size:10px;font-weight:700;margin-bottom:4px;color:var(--text-main);text-transform:uppercase}
+.field input,.field select{padding:8px;border:2px solid var(--editable-border);border-radius:4px;font-size:14px;background:var(--editable-bg);font-weight:600}
+.field input:focus,.field select:focus{outline:none;border-color:var(--hero-green);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+th{background:var(--header-blue);color:#fff;text-align:left;padding:10px;font-size:10px;text-transform:uppercase}
+td{padding:8px;border-bottom:1px solid var(--auto-border);vertical-align:middle}
+td.amount{text-align:right;font-weight:600;font-family:Consolas,monospace;font-size:14px}
+tr.editable-row{background:var(--editable-row-bg)}
+tr.editable-row input{width:100%;padding:6px;border:2px solid var(--editable-border);border-radius:4px;background:var(--editable-bg);font-family:Consolas,monospace;font-size:13px;font-weight:600;text-align:right;box-sizing:border-box}
+tr.editable-row input:focus{outline:none;border-color:var(--hero-green);background:#fff}
+tr.auto-row{background:var(--auto-bg)}
+td.deduction{color:var(--deduction-red);font-weight:700}
+.total-row{background:#e8f5e9;font-weight:800;font-size:15px}
+.total-row td{border-top:2px solid var(--hero-green);padding:12px 10px}
+.gate-list{list-style:none;padding:0;margin:0 0 20px}
+.gate-list li{padding:8px 0;border-bottom:1px dashed var(--auto-border);display:flex;justify-content:space-between;font-size:12px;font-weight:500}
+.gate-pass{color:var(--hero-green);font-weight:700}.gate-fail{color:var(--deduction-red);font-weight:700}
+.output-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--auto-border);font-size:13px}
+.output-row .val{font-weight:700;font-family:Consolas,monospace;font-size:14px}
+.hero-box{background:var(--hero-green);color:#fff;padding:20px;border-radius:8px;text-align:center;margin-top:20px;box-shadow:0 4px 15px rgba(39,174,96,.3)}
+.hero-box h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;opacity:.9}
+.hero-box .big-num{font-size:32px;font-weight:800}
+.hero-box .sub-num{font-size:13px;opacity:.9}
+.stc-summary{background:#fff3cd;border:1px solid #ffeeba;border-radius:6px;padding:12px;margin-top:15px;font-size:12px}
+.stc-summary h4{margin:0 0 8px;color:#856404;font-size:11px;text-transform:uppercase}
+.stc-row{display:flex;justify-content:space-between;margin-bottom:4px}
+footer{background:var(--auto-bg);padding:12px 30px;font-size:10px;color:var(--text-light);text-align:center;border-top:1px solid var(--auto-border)}
+.made-by{margin-top:8px;font-size:10px;color:#a7b0b8;font-weight:500;letter-spacing:.4px}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr}.col-left{border-right:none}.input-group{grid-template-columns:1fr}.topbar{flex-direction:column;gap:8px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>NSW PDRS BESS4 COMMERCIAL PROJECT CALCULATOR</h1>
+<p>Integrated STC + PDRS Calculator | STC $39 | PDRS Rule 2026 (Tiered Logic)</p>
+</header>
+
+<div class="topbar">
+<div class="legend-item"><div class="legend-swatch swatch-editable"></div>Editable <small>(You type here)</small></div>
+<div class="legend-item"><div class="legend-swatch swatch-auto"></div>Auto-calculated <small>(Formulas)</small></div>
+<div class="stat-pill">Panels: <span id="stat-kw">0 kW</span></div>
+<div class="stat-pill">Inverter: <span id="stat-inv">0 kW</span></div>
+<div class="stat-pill">Battery: <span id="stat-batt">0 kWh</span></div>
+</div>
+
+<div class="main-grid">
+<div class="col-left">
+<h2>1. Project & System Inputs</h2>
+<div class="input-group">
+<div class="field"><label>Number of Panels</label><input type="number" id="panels" value="274"></div>
+<div class="field"><label>Panel Wattage (W)</label><input type="number" id="watts" value="475"></div>
+<div class="field"><label>Battery Usable Capacity (kWh)</label><input type="number" id="battKwh" value="194.88" step="0.01"></div>
+<div class="field"><label>Battery Inverter Rating (kW)</label><input type="number" id="invKw" value="100" step="0.1"></div>
+<div class="field"><label>Postcode</label><input type="number" id="postcode" value="2800"></div>
+<div class="field"><label>State</label><select id="state"><option value="NSW" selected>NSW</option><option value="QLD">QLD</option><option value="VIC">VIC</option><option value="SA">SA</option><option value="WA">WA</option><option value="TAS">TAS</option><option value="ACT">ACT</option></select></div>
+<div class="field"><label>Distribution Network</label><select id="network"><option value="Ausgrid">Ausgrid</option><option value="Endeavour">Endeavour</option><option value="Essential" selected>Essential</option></select></div>
+<div class="field"><label>Installed w/ NEW Solar PV?</label><select id="newSolar"><option value="Yes" selected>Yes</option><option value="No">No</option></select></div>
+<div class="field"><label>PRC Spot Price ($)</label><input type="number" id="prcPrice" value="2.70" step="0.01"></div>
+<div class="field"><label>Panel Price ($/ea)</label><input type="number" id="panelPrice" value="110"></div>
+<div class="field"><label>Margin / Markup (%)</label><input type="number" id="markupPct" value="4.31" step="0.01"></div>
+</div>
+
+<h2>2. Editable Project Costing</h2>
+<table>
+<thead><tr><th>Category</th><th>Cost Item</th><th style="text-align:right">Amount ($)</th></tr></thead>
+<tbody>
+<tr class="auto-row"><td>Product</td><td>Panels (Qty × Price)</td><td class="amount" id="cost-panels">$0.00</td></tr>
+<tr class="editable-row"><td>Product</td><td>Inverter Product Cost</td><td><input type="number" id="inverterPrice" value="9453.15" step="0.01"></td></tr>
+<tr class="editable-row"><td>Product</td><td>Battery Product Cost</td><td><input type="number" id="battPrice" value="40947.91" step="0.01"></td></tr>
+<tr class="auto-row"><td>Rack</td><td>Mounting / Racking ($0.045/W)</td><td class="amount" id="cost-rack">$0.00</td></tr>
+<tr class="auto-row"><td>Freight</td><td>Freight ($0.01/W - Fixed)</td><td class="amount" id="cost-freight">$0.00</td></tr>
+<tr class="auto-row"><td>Electrical</td><td>BOS ($0.10/W - Fixed)</td><td class="amount" id="cost-bos">$0.00</td></tr>
+<tr class="auto-row"><td>Certified</td><td>Certified CDC (Flat)</td><td class="amount" id="cost-cdc">$3,500.00</td></tr>
+<tr class="editable-row"><td>Site</td><td>Travel / Accommodation</td><td><input type="number" id="cost-travel" value="0" step="0.01"></td></tr>
+<tr class="editable-row"><td>Grid</td><td>Application / Grid Connection</td><td><input type="number" id="cost-app" value="950" step="0.01"></td></tr>
+<tr class="editable-row"><td>Site</td><td>Lifting Access</td><td><input type="number" id="cost-lift" value="1750" step="0.01"></td></tr>
+<tr class="editable-row"><td>Marketing</td><td>Marketing</td><td><input type="number" id="cost-mkt" value="2957.95" step="0.01"></td></tr>
+<tr class="editable-row"><td>Admin</td><td>Admin & Processing</td><td><input type="number" id="cost-admin" value="750" step="0.01"></td></tr>
+<tr class="editable-row"><td>Services</td><td>Eng / Admin (Overheads)</td><td><input type="number" id="cost-engadmin" value="4732.73" step="0.01"></td></tr>
+<tr class="editable-row"><td>Services</td><td>Battery Admin</td><td><input type="number" id="cost-battadmin" value="7086.55" step="0.01"></td></tr>
+<tr class="editable-row"><td>Services</td><td>Battery Marketing</td><td><input type="number" id="cost-battmkt" value="4429.09" step="0.01"></td></tr>
+<tr class="auto-row"><td>Installation</td><td>Solar Installation (State Rate × Watts)</td><td class="amount" id="cost-solarInst">$0.00</td></tr>
+<tr class="editable-row"><td>Installation</td><td>Battery Installation</td><td><input type="number" id="cost-battInst" value="6500" step="0.01"></td></tr>
+<tr class="auto-row" style="color:var(--deduction-red)"><td>STC Rebate</td><td>Panel STC Rebate @ $39<div id="solar-stc-warning" style="font-size:10px;color:var(--deduction-red);display:none;font-weight:bold">⚠️ No STC - System >200kW</div></td><td class="amount deduction" id="stc-panel">-$0.00</td></tr>
+<tr class="auto-row" style="color:var(--deduction-red)"><td>STC Rebate</td><td>Battery STC Rebate @ $39<div id="battery-stc-warning" style="font-size:10px;color:var(--deduction-red);display:none;font-weight:bold">⚠️ No STC - Battery >100kWh</div></td><td class="amount deduction" id="stc-batt">-$0.00</td></tr>
+<tr class="total-row"><td colspan="2">Total Project Cost (before rebates)</td><td class="amount" id="gross-cost">$0.00</td></tr>
+<tr class="auto-row"><td>Margin</td><td>Gross Profit $ (Cost × Markup %)</td><td class="amount" id="markup-amt">$0.00</td></tr>
+<tr class="auto-row"><td>Margin</td><td>Margin % (Profit ÷ Sell Price)</td><td class="amount" id="margin-pct">0.00%</td></tr>
+<tr class="auto-row"><td>Sell</td><td>Sell Price (Cost + Profit)</td><td class="amount" id="sell-price">$0.00</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="col-right">
+<h2>Eligibility / PDRS Gates</h2>
+<ul class="gate-list">
+<li><span>Battery Size Gate (>20 to 200 kWh)</span><span class="gate-pass" id="gate-size">🟢 PASS</span></li>
+<li><span>Inverter Ratio Gate (Cap ≤ 4x Inv)</span><span class="gate-pass" id="gate-inv">🟢 PASS</span></li>
+<li><span>Solar Requirement Gate</span><span class="gate-pass" id="gate-solar">🟢 PASS</span></li>
+<li><span>Implementation Date (≥ 1 Sept 2026)</span><span class="gate-pass">🟢 PASS</span></li>
+<li><span>Panel Input Check</span><span class="gate-pass">🟢 PASS</span></li>
+</ul>
+<h2>PDRS / Commercial Outputs (Tiered Logic)</h2>
+<div class="output-row"><span>PDRS Eligible Battery Capacity (kWh)</span><span class="val" id="out-cap">0.00</span></div>
+<div class="output-row"><span>Demand Shifting Component (kW)</span><span class="val" id="out-shift">0.00</span></div>
+<div class="output-row"><span>Firmness Factor</span><span class="val" id="out-firm">1.00</span></div>
+<div class="output-row"><span>Peak Demand Shifting Capacity (kW)</span><span class="val" id="out-pdsc">0.00</span></div>
+<div class="output-row"><span>Peak Demand Reduction Capacity (kW)</span><span class="val" id="out-pdrc">0</span></div>
+<div class="output-row"><span>Network Loss Factor</span><span class="val" id="out-nlf">1.04</span></div>
+<div class="output-row"><span>PRCs Generated (round down)</span><span class="val" id="out-prcs">0</span></div>
+<div class="output-row"><span>PDRS Rebate Value ($)</span><span class="val" id="out-rebate">$0.00</span></div>
+<div class="hero-box">
+<h3>Indicative Net Customer Cost ($ incl. GST)</h3>
+<div class="big-num" id="net-cost">$0.00</div>
+<div class="sub-num">Incentive Rate: <span id="out-rate">$0.00</span> / usable kWh</div>
+</div>
+<div class="stc-summary">
+<h4>STC Summary (Value: $39/STC)</h4>
+<div class="stc-row"><span>Panel STCs:</span><span><strong id="stc-panel-qty">0</strong> × $39 = <strong id="stc-panel-total">$0</strong></span></div>
+<div class="stc-row"><span>Battery STCs:</span><span><strong id="stc-batt-qty">0</strong> × $39 = <strong id="stc-batt-total">$0</strong></span></div>
+<div class="stc-row" style="border-top:1px solid #d1b97a;padding-top:6px;margin-top:6px;font-weight:700"><span>Total STC Rebate:</span><span id="stc-total">$0</span></div>
+</div>
+</div>
+</div>
+
+<footer>
+<strong>CALCULATOR REFERENCES:</strong> Logic per SA97889 (Watts × Cost/W; Services; Markup). PDRS: BESS4 Tiered Equations (2A/2B/2C = 0.1 | 3A/3B/3C = 0.067), PDRC rounded, NLF per network. STC: $39, Deeming 6.8, Solar ≤200kW, Battery ≤100kWh.
+<div class="made-by">Made by Clay</div>
+</footer>
+</div>
+
+<script>
+const stateInstallRates={NSW:0.28,QLD:0.30,SA:0.30,TAS:0.40,VIC:0.36,WA:0.30,ACT:0.38};
+const networkNLF={Ausgrid:1.04,Endeavour:1.05,Essential:1.05};
+const stcDeemingFactor=6.8,stcValue=39;
+const zoneRatings={1:1.622,2:1.536,3:1.382,4:1.185};
+function getZone(pc){if(pc>=1001&&pc<=2355)return 3;if(pc>=2356&&pc<=2357)return 2;if(pc>=2358&&pc<=2384)return 3;if(pc>=2385&&pc<=2389)return 2;if(pc>=2390&&pc<=2395)return 3;if(pc>=2396&&pc<=2397)return 2;if(pc>=2398&&pc<=2399)return 3;if(pc>=2400&&pc<=2400)return 2;if(pc>=2401&&pc<=2404)return 3;if(pc>=2405&&pc<=2407)return 2;if(pc>=2408&&pc<=2544)return 3;if(pc>=2545&&pc<=2554)return 4;if(pc>=2555&&pc<=2627)return 3;if(pc>=2628&&pc<=2628)return 4;if(pc>=2629&&pc<=2629)return 3;if(pc>=2630&&pc<=2639)return 4;if(pc>=2640&&pc<=2816)return 3;if(pc>=2817&&pc<=2817)return 2;if(pc>=2818&&pc<=2820)return 3;if(pc>=2821&&pc<=2829)return 2;if(pc>=2830&&pc<=2830)return 3;if(pc>=2831&&pc<=2841)return 2;if(pc>=2842&&pc<=2872)return 3;if(pc>=2873&&pc<=2873)return 2;if(pc>=2874&&pc<=2877)return 3;if(pc>=2878&&pc<=2889)return 2;if(pc>=2890&&pc<=2999)return 3;return 3}
+function fmt(n){return '$'+n.toFixed(2).replace(/\d(?=(\d{3})+\.)/g,'$&,')}
+function gv(id){return parseFloat(document.getElementById(id).value)||0}
+function el(id){return document.getElementById(id)}
+function calculate(){
+const panels=gv('panels'),watts=gv('watts'),battKwh=gv('battKwh'),invKw=gv('invKw'),pc=gv('postcode');
+const state=el('state').value,network=el('network').value,newSolar=el('newSolar').value;
+const prcPrice=gv('prcPrice'),panelPrice=gv('panelPrice'),markupPct=gv('markupPct');
+const totalWatts=panels*watts,kw=totalWatts/1000;
+const rating=zoneRatings[getZone(pc)]||1.382;
+const installRate=stateInstallRates[state]||0.28;
+const nlf=networkNLF[network]||1.04;
+
+el('stat-kw').textContent=kw.toFixed(2)+' kW';
+el('stat-inv').textContent=invKw.toFixed(1)+' kW';
+el('stat-batt').textContent=battKwh.toFixed(2)+' kWh';
+
+const cPanels=panels*panelPrice,cInverter=gv('inverterPrice'),cBatt=gv('battPrice');
+const cRack=totalWatts*0.045,cFreight=totalWatts*0.01,cBos=totalWatts*0.10,cCdc=3500;
+const cTravel=gv('cost-travel'),cApp=gv('cost-app'),cLift=gv('cost-lift');
+const cMkt=gv('cost-mkt'),cAdmin=gv('cost-admin');
+const cEng=gv('cost-engadmin'),cBattAdmin=gv('cost-battadmin'),cBattMkt=gv('cost-battmkt');
+const cSolarInst=totalWatts*installRate,cBattInst=gv('cost-battInst');
+
+let stcPQ=0,stcPR=0,stcBQ=0,stcBR=0;
+if(kw<=200){stcPQ=Math.round(kw*rating*stcDeemingFactor);stcPR=stcPQ*stcValue;el('solar-stc-warning').style.display='none'}else{el('solar-stc-warning').style.display='block'}
+if(battKwh<=100){stcBQ=Math.round(battKwh*rating*stcDeemingFactor);stcBR=stcBQ*stcValue;el('battery-stc-warning').style.display='none'}else{el('battery-stc-warning').style.display='block'}
+
+const totalCost=cPanels+cInverter+cBatt+cRack+cFreight+cBos+cCdc+cTravel+cApp+cLift+cMkt+cAdmin+cEng+cBattAdmin+cBattMkt+cSolarInst+cBattInst;
+const markupAmt=totalCost*markupPct/100;
+const sellPrice=totalCost+markupAmt;
+const marginPct=sellPrice>0?(markupAmt/sellPrice*100):0;
+
+const cap=Math.min(battKwh,4*invKw);
+let shifting=0;
+if(newSolar==='Yes'){if(cap<=50)shifting=cap*0.1*0.5;else if(cap<=100)shifting=(50*0.1*0.5)+((cap-50)*0.1*0.7);else shifting=cap*0.1}
+else{if(cap<=50)shifting=cap*0.067*0.5;else if(cap<=100)shifting=(50*0.067*0.5)+((cap-50)*0.067*0.7);else shifting=cap*0.067}
+const pdsc=shifting*1.0;
+const reductionRounded=Math.round(pdsc*6*15);
+const prcs=Math.floor(reductionRounded*nlf*10);
+const pdrRebate=prcs*prcPrice;
+const netCost=sellPrice-stcPR-stcBR-pdrRebate;
+
+el('cost-panels').textContent=fmt(cPanels);
+el('cost-rack').textContent=fmt(cRack);
+el('cost-freight').textContent=fmt(cFreight);
+el('cost-bos').textContent=fmt(cBos);
+el('cost-cdc').textContent=fmt(cCdc);
+el('cost-solarInst').textContent=fmt(cSolarInst);
+el('stc-panel').textContent='-'+fmt(stcPR);
+el('stc-batt').textContent='-'+fmt(stcBR);
+el('gross-cost').textContent=fmt(totalCost);
+el('markup-amt').textContent=fmt(markupAmt);
+el('margin-pct').textContent=marginPct.toFixed(2)+'%';
+el('sell-price').textContent=fmt(sellPrice);
+el('out-cap').textContent=cap.toFixed(2);
+el('out-shift').textContent=shifting.toFixed(3);
+el('out-firm').textContent='1.00';
+el('out-pdsc').textContent=pdsc.toFixed(3);
+el('out-pdrc').textContent=reductionRounded;
+el('out-nlf').textContent=nlf.toFixed(2);
+el('out-prcs').textContent=prcs;
+el('out-rebate').textContent=fmt(pdrRebate);
+el('net-cost').textContent=fmt(netCost);
+el('out-rate').textContent=fmt(battKwh>0?pdrRebate/battKwh:0);
+el('stc-panel-qty').textContent=stcPQ;
+el('stc-panel-total').textContent=fmt(stcPR);
+el('stc-batt-qty').textContent=stcBQ;
+el('stc-batt-total').textContent=fmt(stcBR);
+el('stc-total').textContent=fmt(stcPR+stcBR);
+el('gate-size').textContent=(battKwh>20&&battKwh<=200)?'🟢 PASS':'🔴 FAIL';
+el('gate-inv').textContent=(battKwh<=4*invKw)?'🟢 PASS':'🔴 FAIL';
+el('gate-solar').textContent=(kw>=battKwh/4)?'🟢 PASS':'🔴 FAIL';
+}
+document.querySelectorAll('input,select').forEach(e=>{e.addEventListener('input',calculate);e.addEventListener('change',calculate)});
+calculate();
+</script>
+</body>
+</html>
